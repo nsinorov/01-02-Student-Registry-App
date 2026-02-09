@@ -1,37 +1,46 @@
-name: Build and test Node.js application
+name: Build, Test, and Deploy Node.js Application
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]       # runs on push to main
   schedule:
-    - cron: "*/5 * * * *"  # runs every 5 minutes
- 
+    - cron: "*/5 * * * *"       # runs every 5 minutes (UTC)
+  workflow_dispatch:             # allows manual trigger
+
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out the code
-      uses: actions/checkout@v4
-    - name: Use Node.js 20
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-    - name: Install dependencies
-      run: npm install
-    - name: Run tests
-      run: npm test
- 
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
   deploy:
     needs: build_and_test
     runs-on: ubuntu-latest
-
     steps:
-    - name: Deploy to Render
-      uses: JorgeLNJunior/render-deploy@v1.4.7
-      with:
-        service_id: ${{ secrets.RENDER_SERVICE_ID }}
-        api_key: ${{ secrets.RENDER_API_KEY }}
-        wait_deploy: false
+      - name: Deploy to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.7
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true       # waits for deploy to finish, so logs show success/failure
 
-# hopefully works now, again
+      - name: Notify deploy success
+        if: ${{ success() }}
+        run: echo "✅ Deploy to Render successful!"
+
+      - name: Notify deploy failure
+        if: ${{ failure() }}
+        run: echo "❌ Deploy to Render failed!"

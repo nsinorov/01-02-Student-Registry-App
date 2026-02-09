@@ -3,7 +3,7 @@ name: Build and test Node.js application
 on:
   push:
     branches: [ "main" ]
-
+ 
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
@@ -31,3 +31,4 @@ jobs:
         service_id: ${{ secrets.RENDER_SERVICE_ID }}
         api_key: ${{ secrets.RENDER_API_KEY }}
         wait_deploy: true
+  
